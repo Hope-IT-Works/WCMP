@@ -55,24 +55,32 @@ class WCMP {
     }
 
     [Boolean] ReadUserInputBoolean ($Prompt) {
-        $Result = $null
+        $Result = ''
+        $ReadUserState = $true
         if($null -eq $Prompt){
             $Prompt = "(y/n)"
         } else {
-            $Prompt += $Prompt + " (y/n)"
+            $Prompt = $Prompt + " (y/n)"
         }
         do {
             $Result = Read-Host -Prompt $Prompt
             if($Result -ne "y" -or $Result -ne "n"){
                 Write-Host -ForegroundColor Yellow 'Please enter "y" for yes or "n" for no.'
             }
-        } while ($Result -eq "y" -or $Result -eq "n")
-        if($Result -eq "y"){
-            $Result = $true
-        }
-        if($Result -eq "n"){
-            $Result = $false
-        }
+
+            if($Result -eq "y" -or $Result -eq "n"){
+                if($Result -eq "y"){
+                    $Result = $true
+                    $ReadUserState = $false
+                }
+                if($Result -eq "n"){
+                    $Result = $false
+                    $ReadUserState = $false
+                }
+            } else {
+                Write-Host -ForegroundColor Yellow 'Please enter "y" for yes or "n" for no.'
+            }
+        } while ($ReadUserState)
         return $Result
     }
 
@@ -90,7 +98,7 @@ class WCMP {
 
     [void] Error ($Message) {
         if($null -ne $Message){
-            Write-Host -ForegroundColor Red ('[ERROR]: ' + $Message)
+            Write-Host -ForegroundColor Red ('[ERRO]: ' + $Message)
             if(!($this.ReadUserInputBoolean('Do you want to continue?'))){
                 exit
             }
@@ -101,19 +109,22 @@ class WCMP {
         if($null -eq $Message){
             $Message = 'Reason unknown.'
         }
-        Write-Host -ForegroundColor Red ("[FATAL]: " + $Message)
+        Write-Host -ForegroundColor Red ("[FATA]: " + $Message)
         exit
     }
 
     [void] ReadContinue () {
-        if($this.IsHeadless()){
-            if($this.IsForced()){
+        if($this.IsHeadless){
+            if($this.IsForced){
                 Write-Host -ForegroundColor Yellow ('[FORCED] Ignoring prior warning due to forced execution.')
             } else {
                 $this.Fatal('Terminating due to prior warning. Execute again with "-Force" parameter to keep running.')
             }
         } else {
-            if(!($this.ReadUserInputBoolean('Do you want to proceed anyway?'))){
+            if($this.ReadUserInputBoolean('Do you want to proceed anyway?')){
+                $this.Info('Proceeding anyway...')
+            } else {
+                $this.Info('Terminating...')
                 exit
             }
         }
@@ -143,7 +154,11 @@ class WCMP {
             $URL = $URL.AbsoluteUri
             if(Test-Path -Path $Path){
                 try {
+                    $ProgressPreferenceCache = $ProgressPreference
+                    $ProgressPreference = 'SilentlyContinue'
                     Invoke-WebRequest -UseBasicParsing -Uri $URL -OutFile $FilePath
+                    $ProgressPreference = $ProgressPreferenceCache
+                    Remove-Variable -Name ProgressPreferenceCache
                     if(Test-Path -Path $FilePath){
                         $Result = $true
                     } else {
@@ -163,6 +178,12 @@ class WCMP {
 }
 
 $WCMP = [WCMP]::new($Headless, $Force, $SkipPHP, $SkipMariaDB)
+
+$WCMP.Info('   _      __  _____  __  ___  ___   ')
+$WCMP.Info('  | | /| / / / ___/ /  |/  / / _ \  ')
+$WCMP.Info('  | |/ |/ / / /__  / /|_/ / / ___/  ')
+$WCMP.Info('  |__/|__/  \___/ /_/  /_/ /_/      ')
+$WCMP.Info('====================================')
 
 # Stop setup if OS is not supported
 if(!([System.Environment]::Is64BitOperatingSystem) -or !(([System.Environment]::OSVersion).Platform -eq "Win32NT")){
@@ -188,7 +209,8 @@ $WCMP.DirectoryTree | ForEach-Object {
         $WCMP.ReadContinue()
     } else {
         try {
-            New-Item -Path $WCMP_SubDirectory -ItemType Directory
+            $WCMP.Info('Creating directory "'+$_+'"')
+            New-Item -Path $WCMP_SubDirectory -ItemType Directory | Out-Null
         } catch {
             $WCMP.Fatal('The subdirectory "'+$_+'" could not be created.')
         }
@@ -196,6 +218,9 @@ $WCMP.DirectoryTree | ForEach-Object {
 }
 
 # Caddy
+$WCMP.Info('---------------------------')
+$WCMP.Info('           CADDY           ')
+$WCMP.Info('---------------------------')
 $WCMP.Info('Requesting Caddy...')
 $Caddy_Resource = New-Object -TypeName System.Collections.ArrayList
 try {
@@ -229,7 +254,7 @@ if($WCMP.DownloadFile($Caddy_Resource, $Caddy_FilePath)){
         $this.Error('Caddy could not be extracted.')
     }
 } else {
-    $WCMP.Fatal('Caddy download failed.')
+    $WCMP.Fatal('Caddy download failed ('+$Caddy_Resource+')')
 }
 if(Test-Path -Path $Caddy_CacheFilePath){
     try {
@@ -244,6 +269,9 @@ if(Test-Path -Path $Caddy_CacheFilePath){
 
 # PHP
 if($WCMP.IncludePHP){
+    $WCMP.Info('---------------------------')
+    $WCMP.Info('            PHP            ')
+    $WCMP.Info('---------------------------')
     try {
         $PHP_Resources_URL = 'https://windows.php.net/downloads/releases/'
         $PHP_Resources = (Invoke-WebRequest -UseBasicParsing -Uri $PHP_Resources_URL).Links.href | Where-Object -FilterScript {$_ -match ("/downloads/releases/php-")}
@@ -265,7 +293,7 @@ if($WCMP.IncludePHP){
     if($PHP_Versions.Count -le 0){
         $WCMP.Fatal('No PHP-Versions available, please create a issue at https://github.com/Hope-IT-Works/WCMP')
     } else {
-        $WCMP.Info($PHP_Versions.Count+' PHP-Versions available:')
+        $WCMP.Info([string]$PHP_Versions.Count+' PHP-Versions available:')
         $PHP_Versions | Format-Table -Property 'ID','Name'
         $PHP_Version = $PHP_Versions[$WCMP.ReadUserInputMenu($PHP_Versions)]
         $WCMP.Info('PHP-Version "'+$PHP_Version.Name.Split('-')[0]+'" was selected.')
@@ -273,6 +301,7 @@ if($WCMP.IncludePHP){
         $PHP_Path                = $WCMP.Config.Path + '\cache'
         $PHP_FilePath            = $PHP_Path + '\php-'+$PHP_Version.Name+'.zip'
         $PHP_DestinationPath     = $WCMP.Config.Path + '\php'
+        $WCMP.Info('Downloading PHP...')
         if($WCMP.DownloadFile($PHP_Resource, $PHP_FilePath)){
             try {
                 $WCMP.Info('PHP download complete.')
@@ -283,7 +312,7 @@ if($WCMP.IncludePHP){
                 $this.Error('PHP could not be extracted.')
             }
         } else {
-            $WCMP.Fatal('PHP download failed.')
+            $WCMP.Fatal('PHP download failed ('+$PHP_Resource+')')
         }
         $PHP_Version = $PHP_Version.Name.Split('-')[0]
     }
@@ -293,6 +322,9 @@ if($WCMP.IncludePHP){
 
 # MariaDB
 if($WCMP.IncludeMariaDB){
+    $WCMP.Info('---------------------------')
+    $WCMP.Info('          MariaDB          ')
+    $WCMP.Info('---------------------------')
     try {
         $MariaDB_Resources = $WCMP.DownloadRequest('https://downloads.mariadb.org/rest-api/mariadb/') | ConvertFrom-Json
     } catch {
@@ -308,9 +340,59 @@ if($WCMP.IncludeMariaDB){
     } catch {
         $WCMP.Fatal('MariaDB API returned invalid JSON!')
     }
-    # https://downloads.mariadb.org/rest-api/mariadb/10.10/latest
-    # https://downloads.mariadb.org/rest-api/cpu
-    # https://downloads.mariadb.org/rest-api/os
+    try {
+        $MariaDB_Resource = $MariaDB_Resource.releases.PSObject.Properties.Value.files
+    } catch {
+        $WCMP.Fatal('No files for latest release of MariaDB found! A')
+    }
+    try {
+        $MariaDB_Resource = $MariaDB_Resource | Where-Object -FilterScript {$_.OS -eq "Windows" -and $_.package_type -eq "ZIP file" -and $_.file_name -notmatch "debug"}
+    } catch {
+        $WCMP.Fatal('No file for latest release of MariaDB found! B')
+    }
+    $MariaDB_Resource = @($MariaDB_Resource)
+    if($MariaDB_Resource.Count -eq 1){
+        $MariaDB_Resource        = $MariaDB_Resource.file_download_url
+        $MariaDB_Path            = $WCMP.Config.Path + '\cache'
+        $MariaDB_FilePath        = $MariaDB_Path + '\' + $MariaDB_Resource.Split('/')[-1]
+        $MariaDB_CachePath       = $WCMP.Config.Path + '\cache\mariadb'
+        $MariaDB_DestinationPath = $WCMP.Config.Path + '\mariadb'
+        $MariaDB_InstallDBPath   = $MariaDB_DestinationPath + '\bin\mysql_install_db.exe'
+        $MariaDB_
+        $WCMP.Info('Downloading MariaDB...')
+        if($WCMP.DownloadFile($MariaDB_Resource, $MariaDB_FilePath)){
+            try {
+                $WCMP.Info('MariaDB download complete.')
+                $WCMP.Info('Extracting MariaDB...')
+                Expand-Archive -Path $MariaDB_FilePath -DestinationPath $MariaDB_CachePath -Force
+                $WCMP.Info('MariaDB extracted.')
+            } catch {
+                $WCMP.Fatal('MariaDB could not be extracted.')
+            }
+            try {
+                $WCMP.Info('Moving MariaDB to destination...')
+                Move-Item -Path ($MariaDB_CachePath+'\'+$MariaDB_Resource.Split('/')[-1].Replace('.zip','')+'\*') -Destination $MariaDB_DestinationPath -Force
+                $WCMP.Info('MariaDB was moved.')
+            } catch {
+                $WCMP.Fatal('MariaDB could not be moved to destination.')
+            }
+        } else {
+            $WCMP.Fatal('MariaDB download failed ('+$MariaDB_Resource+')')
+        }
+    } else {
+        $WCMP.Fatal('No file for latest release of MariaDB found!')
+    }
+    if(Test-Path -Path $MariaDB_InstallDBPath){
+        $WCMP.Info('Initializing MariaDB...')
+        cmd /c $MariaDB_InstallDBPath
+        $WCMP.Info('MariaDB was initialized.')
+    } else {
+        $WCMP.Fatal('MariaDB could not be initialized.')
+    }
 } else {
     $WCMP.Info('Skipped MariaDB installation.')
 }
+
+$WCMP.Info('---------------------------')
+$WCMP.Info('WCMP installation finished!')
+$WCMP.Info('---------------------------')
