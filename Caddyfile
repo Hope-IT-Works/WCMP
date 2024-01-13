@@ -3,7 +3,7 @@
 }
 
 localhost 127.0.0.1 {
-    root * .\www
+    root * ..\www
     log {
         output file .\log\caddy.log
         format console
