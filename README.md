@@ -1,4 +1,4 @@
-![WCMP](https://socialify.git.ci/Hope-IT-Works/WCMP/image?description=1&font=Jost&language=1&name=1&owner=1&pattern=Floating%20Cogs&theme=Auto)
+![WCMP](https://socialify.git.ci/Hope-IT-Works/WCMP/image?description=1&font=Jost&language=1&name=1&owner=1&pattern=Floating%20Cogs&theme=Dark)
 
 # WCMP (Windows Caddy MariaDB PHP)[^wcmp_notice]
 
