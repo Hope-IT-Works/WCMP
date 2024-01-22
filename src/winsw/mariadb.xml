@@ -1,0 +1,9 @@
+<service>
+  <id>WCMP MariaDB</id>
+  <name>WCMP MariaDB</name>
+  <description>This service runs the WCMP MariaDB server.</description>
+  <workingdirectory>##WORKINGDIRECTORY##</workingdirectory>
+  <executable>mariadbd</executable>
+  <arguments></arguments>
+  <delayedAutoStart>true</delayedAutoStart>
+</service>

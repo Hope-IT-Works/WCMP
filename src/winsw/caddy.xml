@@ -1,0 +1,9 @@
+<service>
+  <id>WCMP Caddy</id>
+  <name>WCMP Caddy</name>
+  <description>This service runs the WCMP Caddy server.</description>
+  <workingdirectory>##WORKINGDIRECTORY##</workingdirectory>
+  <executable>caddy</executable>
+  <arguments>run --watch</arguments>
+  <delayedAutoStart>true</delayedAutoStart>
+</service>

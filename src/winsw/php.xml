@@ -1,0 +1,9 @@
+<service>
+  <id>WCMP PHP</id>
+  <name>WCMP PHP</name>
+  <description>This service runs the WCMP PHP server.</description>
+  <workingdirectory>##WORKINGDIRECTORY##</workingdirectory>
+  <executable>php-cgi</executable>
+  <arguments>-b 127.0.0.1:9000</arguments>
+  <delayedAutoStart>true</delayedAutoStart>
+</service>

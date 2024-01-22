@@ -8,7 +8,8 @@ param (
     [Parameter()][switch]$Headless,
     [Parameter()][switch]$Force,
     [Parameter()][switch]$SkipPHP,
-    [Parameter()][switch]$SkipMariaDB
+    [Parameter()][switch]$SkipMariaDB,
+    [Parameter()][switch]$SkipWinSW
 )
 
 class WCMP {
@@ -16,6 +17,7 @@ class WCMP {
     [bool]$IsForced
     [bool]$IncludePHP
     [bool]$IncludeMariaDB
+    [bool]$IncludeWinSW
     # Default config with default values (used when specified values are not available or incorrect)
     $DefaultConfig = @{
         Path = (Get-Location).Path
@@ -32,14 +34,16 @@ class WCMP {
         "caddy",
         "mariadb",
         "php",
+        "winsw",
         "www"
     )
 
-    WCMP ($Headless, $Force, $SkipPHP, $SkipMariaDB) {
+    WCMP ($Headless, $Force, $SkipPHP, $SkipMariaDB, $SkipWinSW) {
         $this.IsHeadless = $Headless
         $this.IsForced = $Force
         $this.IncludePHP = !$SkipPHP
         $this.IncludeMariaDB = !$SkipMariaDB
+        $this.IncludeWinSW = !$SkipWinSW
     }
 
     [Int] ReadUserInputMenu ($OptionsArray) {
@@ -177,7 +181,7 @@ class WCMP {
     }
 }
 
-$WCMP = [WCMP]::new($Headless, $Force, $SkipPHP, $SkipMariaDB)
+$WCMP = [WCMP]::new($Headless, $Force, $SkipPHP, $SkipMariaDB, $SkipWinSW)
 
 $WCMP.Info('   _      __  _____  __  ___  ___   ')
 $WCMP.Info('  | | /| / / / ___/ /  |/  / / _ \  ')
@@ -242,29 +246,42 @@ $Caddy_CachePath           = $WCMP.Config.Path + '\cache\caddy'
 $Caddy_CacheFilePath       = $Caddy_CachePath + '\caddy.exe'
 $Caddy_DestinationPath     = $WCMP.Config.Path + '\caddy'
 $Caddy_DestinationFilePath = $Caddy_DestinationPath + '\caddy.exe'
+$Caddy_CaddyfileResource   = 'https://raw.githubusercontent.com/Hope-IT-Works/WCMP/main/src/caddy/Caddyfile'
+$Caddy_CaddyfileFilePath   = $Caddy_DestinationPath + '\Caddyfile'
 $WCMP.Info('Caddy requested.')
-$WCMP.Info('Downloading Caddy...')
+$WCMP.Info('Downloading Caddy '+$Caddy_Version+'...')
 if($WCMP.DownloadFile($Caddy_Resource, $Caddy_FilePath)){
     try {
-        $WCMP.Info('Caddy download complete.')
-        $WCMP.Info('Extracting Caddy...')
+        $WCMP.Info('Caddy '+$Caddy_Version+' download complete.')
+        $WCMP.Info('Extracting Caddy '+$Caddy_Version+'...')
         Expand-Archive -Path $Caddy_FilePath -DestinationPath $Caddy_CachePath
-        $WCMP.Info('Caddy extracted.')
+        $WCMP.Info('Caddy '+$Caddy_Version+' extracted.')
     } catch {
-        $this.Error('Caddy could not be extracted.')
+        $this.Error('Caddy '+$Caddy_Version+' could not be extracted.')
     }
 } else {
-    $WCMP.Fatal('Caddy download failed ('+$Caddy_Resource+')')
+    $WCMP.Fatal('Caddy '+$Caddy_Version+' download failed ('+$Caddy_Resource+')')
 }
 if(Test-Path -Path $Caddy_CacheFilePath){
     try {
         Move-Item -Path $Caddy_CacheFilePath -Destination $Caddy_DestinationFilePath
-        $WCMP.Info('Caddy is available at: "'+$Caddy_DestinationFilePath+'"')
+        $WCMP.Info('Caddy '+$Caddy_Version+' is available at: "'+$Caddy_DestinationFilePath+'"')
     } catch {
-        $WCMP.Error('Caddy could not be moved from "'+$Caddy_CacheFilePath+'" to "'+$Caddy_DestinationFilePath+'"')
+        $WCMP.Error('Caddy '+$Caddy_Version+' could not be moved from "'+$Caddy_CacheFilePath+'" to "'+$Caddy_DestinationFilePath+'"')
     }
 } else {
-    $WCMP.Error('Caddy binary could not be found. (looking for "'+$Caddy_CacheFilePath+'")')
+    $WCMP.Error('Caddy '+$Caddy_Version+' binary could not be found. (looking for "'+$Caddy_CacheFilePath+'")')
+}
+$WCMP.Info('Downloading Caddyfile...')
+if($WCMP.DownloadFile($Caddy_CaddyfileResource, $Caddy_CaddyfileFilePath)){
+    $WCMP.Info('Caddyfile download complete.')
+} else {
+    $WCMP.Fatal('Caddyfile download failed ('+$Caddy_CaddyfileResource+')')
+}
+if(Test-Path -Path $Caddy_CaddyfileFilePath){
+    $WCMP.Info('Caddyfile is available at: "'+$Caddy_CaddyfileFilePath+'"')
+} else {
+    $WCMP.Error('Caddyfile could not be found. (looking for "'+$Caddy_CaddyfileFilePath+'")')
 }
 
 # PHP
@@ -391,6 +408,138 @@ if($WCMP.IncludeMariaDB){
     }
 } else {
     $WCMP.Info('Skipped MariaDB installation.')
+}
+
+# WinSW
+if($WCMP.IncludeWinSW){
+    $WCMP.Info('---------------------------')
+    $WCMP.Info('           WinSW           ')
+    $WCMP.Info('---------------------------')
+    $WCMP.Info('Requesting WinSW...')
+    $WinSW_Resource = New-Object -TypeName System.Collections.ArrayList
+    try {
+        $WinSW_Resources = $WCMP.DownloadRequest('https://api.github.com/repos/winsw/winsw/releases/latest') | ConvertFrom-Json
+    } catch {
+        $WCMP.Fatal('GitHub API returned invalid JSON!')
+    }
+    $WinSW_Version = $WinSW_Resources.name
+    $WinSW_Resources.assets | Where-Object -FilterScript {$_.content_type -eq "application/x-msdownload" -and $_.name -match "NET461"} | ForEach-Object {
+        $WinSW_Resource.Add($_) | Out-Null
+    }
+    if($WinSW_Resource.Count -le 0){
+        $WCMP.Fatal('No compatible variant of WinSW found!')
+    }
+    $WinSW_Resource                = $WinSW_Resource[0].browser_download_url
+    $WinSW_DestinationPath         = $WCMP.Config.Path + '\winsw'
+    $WinSW_DestinationFilePath     = $WinSW_DestinationPath + '\winsw.exe'
+    $WinSW_Service_CaddyResource   = 'https://raw.githubusercontent.com/Hope-IT-Works/WCMP/main/src/winsw/caddy.xml'
+    $WinSW_Service_CaddyFilePath   = $WinSW_DestinationPath + '\caddy.xml'
+    $WinSW_Service_PHPResource     = 'https://raw.githubusercontent.com/Hope-IT-Works/WCMP/main/src/winsw/php.xml'
+    $WinSW_Service_PHPFilePath     = $WinSW_DestinationPath + '\php.xml'
+    $WinSW_Service_MariaDBResource = 'https://raw.githubusercontent.com/Hope-IT-Works/WCMP/main/src/winsw/mariadb.xml'
+    $WinSW_Service_MariaDBFilePath = $WinSW_DestinationPath + '\mariadb.xml'
+    $WCMP.Info('WinSW requested.')
+    $WCMP.Info('Downloading WinSW '+$WinSW_Version+'...')
+    if($WCMP.DownloadFile($WinSW_Resource, $WinSW_DestinationFilePath)){
+        $WCMP.Info('WinSW '+$WinSW_Version+' download complete.')
+    } else {
+        $WCMP.Fatal('WinSW '+$WinSW_Version+' download failed ('+$WinSW_Resource+')')
+    }
+    if(Test-Path -Path $WinSW_DestinationFilePath){
+        $WCMP.Info('WinSW '+$WinSW_Version+' is available at: "'+$WinSW_DestinationFilePath+'"')
+    } else {
+        $WCMP.Fatal('WinSW '+$WinSW_Version+' binary could not be found. (looking for "'+$WinSW_DestinationFilePath+'")')
+    }
+
+    $WCMP.Info('Downloading Caddy service config...')
+    if($WCMP.DownloadFile($WinSW_Service_CaddyResource, $WinSW_Service_CaddyFilePath)){
+        $WCMP.Info('Caddy service config download complete.')
+    } else {
+        $WCMP.Fatal('Caddy service config download failed ('+$WinSW_Service_CaddyResource+')')
+    }
+    if(Test-Path -Path $Caddy_CaddyfileFilePath){
+        try {
+            $WCMP.Info('Setting Caddy service working directory...')
+            $WinSW_Service_CaddyConfig = Get-Content -Path $WinSW_Service_CaddyFilePath -Encoding utf8
+            $WinSW_Service_CaddyConfig = $WinSW_Service_CaddyConfig -replace '##WORKINGDIRECTORY##', $WCMP.Config.Path+'\caddy'
+            $WinSW_Service_CaddyConfig | Set-Content -Path $WinSW_Service_CaddyFilePath -Encoding utf8
+            $WCMP.Info('Caddy service working directory set.')
+        } catch {
+            $WCMP.Fatal('Caddy service working directory could not be set.')
+        }
+        $WCMP.Info('Caddy service config is available at: "'+$WinSW_Service_CaddyFilePath+'"')
+    } else {
+        $WCMP.Fatal('Caddy service config could not be found. (looking for "'+$WinSW_Service_CaddyFilePath+'")')
+    }
+    try {
+        $WCMP.Info('Installing Caddy service (this may trigger a UAC prompt, please accept)...')
+        cmd /c $WinSW_DestinationFilePath install $WinSW_Service_CaddyFilePath
+        $WCMP.Info('Caddy service installed.')
+    } catch {
+        $WCMP.Fatal('Caddy service could not be installed. (have you accepted the UAC prompt? try running the script as administrator)')
+    }
+
+    if($WCMP.IncludePHP){
+        $WCMP.Info('Downloading PHP service config...')
+        if($WCMP.DownloadFile($WinSW_Service_PHPResource, $WinSW_Service_PHPFilePath)){
+            $WCMP.Info('PHP service config download complete.')
+        } else {
+            $WCMP.Fatal('PHP service config download failed ('+$WinSW_Service_PHPResource+')')
+        }
+        if(Test-Path -Path $Caddy_CaddyfileFilePath){
+            try {
+                $WCMP.Info('Setting PHP service working directory...')
+                $WinSW_Service_PHPConfig = Get-Content -Path $WinSW_Service_PHPFilePath -Encoding utf8
+                $WinSW_Service_PHPConfig = $WinSW_Service_PHPConfig -replace '##WORKINGDIRECTORY##', $WCMP.Config.Path+'\php'
+                $WinSW_Service_PHPConfig | Set-Content -Path $WinSW_Service_PHPFilePath -Encoding utf8
+                $WCMP.Info('PHP service working directory set.')
+            } catch {
+                $WCMP.Fatal('PHP service working directory could not be set.')
+            }
+            $WCMP.Info('PHP service config is available at: "'+$WinSW_Service_PHPFilePath+'"')
+        } else {
+            $WCMP.Fatal('PHP service config could not be found. (looking for "'+$WinSW_Service_PHPFilePath+'")')
+        }
+        try {
+            $WCMP.Info('Installing PHP service (this may trigger a UAC prompt, please accept)...')
+            cmd /c $WinSW_DestinationFilePath install $WinSW_Service_PHPFilePath
+            $WCMP.Info('PHP service installed.')
+        } catch {
+            $WCMP.Fatal('PHP service could not be installed. (have you accepted the UAC prompt? try running the script as administrator)')
+        }
+    }
+
+    if($WCMP.IncludeMariaDB){
+        $WCMP.Info('Downloading MariaDB service config...')
+        if($WCMP.DownloadFile($WinSW_Service_MariaDBResource, $WinSW_Service_MariaDBFilePath)){
+            $WCMP.Info('MariaDB service config download complete.')
+        } else {
+            $WCMP.Fatal('MariaDB service config download failed ('+$WinSW_Service_MariaDBResource+')')
+        }
+        if(Test-Path -Path $Caddy_CaddyfileFilePath){
+            try {
+                $WCMP.Info('Setting MariaDB service working directory...')
+                $WinSW_Service_MariaDBConfig = Get-Content -Path $WinSW_Service_MariaDBFilePath -Encoding utf8
+                $WinSW_Service_MariaDBConfig = $WinSW_Service_MariaDBConfig -replace '##WORKINGDIRECTORY##', $WCMP.Config.Path+'\mariadb\bin'
+                $WinSW_Service_MariaDBConfig | Set-Content -Path $WinSW_Service_MariaDBFilePath -Encoding utf8
+                $WCMP.Info('MariaDB service working directory set.')
+            } catch {
+                $WCMP.Fatal('MariaDB service working directory could not be set.')
+            }
+            $WCMP.Info('MariaDB service config is available at: "'+$WinSW_Service_MariaDBFilePath+'"')
+        } else {
+            $WCMP.Fatal('MariaDB service config could not be found. (looking for "'+$WinSW_Service_MariaDBFilePath+'")')
+        }
+        try {
+            $WCMP.Info('Installing MariaDB service (this may trigger a UAC prompt, please accept)...')
+            cmd /c $WinSW_DestinationFilePath install $WinSW_Service_MariaDBFilePath
+            $WCMP.Info('MariaDB service installed.')
+        } catch {
+            $WCMP.Fatal('MariaDB service could not be installed. (have you accepted the UAC prompt? try running the script as administrator)')
+        }
+    }
+} else {
+    $WCMP.Info('Skipped WinSW installation.')
 }
 
 $WCMP.Info('---------------------------')
