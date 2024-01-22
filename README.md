@@ -1,10 +1,17 @@
+![WCMP](https://socialify.git.ci/Hope-IT-Works/WCMP/image?description=1&font=Jost&language=1&name=1&owner=1&pattern=Floating%20Cogs&theme=Auto)
+
 # WCMP (Windows Caddy MariaDB PHP)[^wcmp_notice]
 
 tool for setting up a caddy-server with PHP and MariaDB support
 
 ## Warning
 
-*WCMP is still in developement and may be unstable*
+*WCMP is still in active developement*
+
+Please note, that WCMP was designed for development purposes.
+You could try to use it in production.
+
+If you find any bugs or have any suggestions, please open an issue at [issues](https://github.com/Hope-IT-Works/WCMP/issues/new/choose).
 
 ## About
 
@@ -18,30 +25,47 @@ flowchart LR
        PHP-CGI<-.->MariaDB[("\nMariaDB-Server\n(SQL-Server)")]
 ```
 
+The script is pretty advanced and tries to do everything automatically. If it fails at any point, it will tell you what happened.
+
+WCMP comes with default configuration files for all components. You can change them later if you want.
+
 ## How to install
 
-*WIP*
-<!--
-Download the `.ps1`-file from [here](./src/). Run the script in PowerShell with `.\caddy-php.ps1`.
+1. Start PowerShell as Administrator
+2. Run the following command:
+
+```powershell
+Invoke-WebReqeust -UseBasicParsing -Uri "https://raw.githubusercontent.com/Hope-IT-Works/WCMP/main/src/Invoke-WCMPSetup.ps1" | Invoke-Expression 
+```
 
 The script
 
+- always checks for the latest versions of all components during installation.
 - will suggest available PHP versions and lets you choose.
-- tries to choose the caddy version automatically but lets you choose when it has problems doing so.
-- creates a subfolder named "caddy-php".
--->
 
 ## How to run
 
-<!--
-```
-php-cgi -b 127.0.0.1:9000
+By default, WCMP installs Windows Services which start automatically.
+
+You can start the services manually with the following commands:
+
+### Caddy Server
+
+```bash
+.\caddy\caddy.exe run --watch
 ```
 
+### MariaDB Server
+
+```bash
+.\mariadb\bin\mysqld.exe
 ```
-caddy run --watch
+
+### PHP-CGI Server
+
+```bash
+.\php\php-cgi.exe -b 127.0.0.1:9000
 ```
--->
 
 ## Documentation
 
@@ -55,7 +79,8 @@ caddy run --watch
 
 <details><summary>Is it portable?</summary>
 <p>
-       The services used by this project are configured to work portable. Move your installation where you want.
+       By default, WCMP installs Windows Services that are non-portable. Skip the service installation with ```-SkipWinSW``` , if you want an portable installation.
+       The services used by WCMP are configured to work portable. Move your installation where you want.
 </p>
 </details>
 
