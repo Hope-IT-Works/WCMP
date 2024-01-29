@@ -35,7 +35,7 @@ WCMP comes with default configuration files for all components. You can change t
 2. Run the following command:
 
 ```powershell
-Invoke-WebReqeust -UseBasicParsing -Uri "https://raw.githubusercontent.com/Hope-IT-Works/WCMP/main/src/Invoke-WCMPSetup.ps1" | Invoke-Expression 
+Invoke-WebRequest -UseBasicParsing -Uri "https://raw.githubusercontent.com/Hope-IT-Works/WCMP/main/src/Invoke-WCMPSetup.ps1" | Invoke-Expression 
 ```
 
 The script
