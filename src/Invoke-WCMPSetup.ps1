@@ -283,13 +283,6 @@ if(Test-Path -Path $Caddy_CaddyfileFilePath){
 } else {
     $WCMP.Error('Caddyfile could not be found. (looking for "'+$Caddy_CaddyfileFilePath+'")')
 }
-try {
-    $WCMP.Info('Removing Caddy download cache directory...')
-    Remove-Item -Path $Caddy_Path -Force -Recurse
-    $WCMP.Info('Caddy download cache directory removed.')
-} catch {
-    $WCMP.Error('Caddy download cache directory could not be removed.')
-}
 
 # PHP
 if($WCMP.IncludePHP){
@@ -547,6 +540,14 @@ if($WCMP.IncludeWinSW){
     }
 } else {
     $WCMP.Info('Skipped WinSW installation.')
+}
+
+try {
+    $WCMP.Info('Removing WCMP download cache directory...')
+    Remove-Item -Path ($WCMP.Config.Path + '\cache') -Force -Recurse
+    $WCMP.Info('WCMP download cache directory removed.')
+} catch {
+    $WCMP.Error('WCMP download cache directory could not be removed.')
 }
 
 $WCMP.Info('---------------------------')
