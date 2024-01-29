@@ -461,7 +461,7 @@ if($WCMP.IncludeWinSW){
         try {
             $WCMP.Info('Setting Caddy service working directory...')
             $WinSW_Service_CaddyConfig = Get-Content -Path $WinSW_Service_CaddyFilePath -Encoding utf8
-            $WinSW_Service_CaddyConfig = $WinSW_Service_CaddyConfig -replace '##WORKINGDIRECTORY##', $WCMP.Config.Path+'\caddy'
+            $WinSW_Service_CaddyConfig = $WinSW_Service_CaddyConfig -replace '##WORKINGDIRECTORY##', ($WCMP.Config.Path+'\caddy')
             $WinSW_Service_CaddyConfig | Set-Content -Path $WinSW_Service_CaddyFilePath -Encoding utf8
             $WCMP.Info('Caddy service working directory set.')
         } catch {
@@ -490,7 +490,7 @@ if($WCMP.IncludeWinSW){
             try {
                 $WCMP.Info('Setting PHP service working directory...')
                 $WinSW_Service_PHPConfig = Get-Content -Path $WinSW_Service_PHPFilePath -Encoding utf8
-                $WinSW_Service_PHPConfig = $WinSW_Service_PHPConfig -replace '##WORKINGDIRECTORY##', $WCMP.Config.Path+'\php'
+                $WinSW_Service_PHPConfig = $WinSW_Service_PHPConfig -replace '##WORKINGDIRECTORY##', ($WCMP.Config.Path+'\php')
                 $WinSW_Service_PHPConfig | Set-Content -Path $WinSW_Service_PHPFilePath -Encoding utf8
                 $WCMP.Info('PHP service working directory set.')
             } catch {
@@ -520,7 +520,7 @@ if($WCMP.IncludeWinSW){
             try {
                 $WCMP.Info('Setting MariaDB service working directory...')
                 $WinSW_Service_MariaDBConfig = Get-Content -Path $WinSW_Service_MariaDBFilePath -Encoding utf8
-                $WinSW_Service_MariaDBConfig = $WinSW_Service_MariaDBConfig -replace '##WORKINGDIRECTORY##', $WCMP.Config.Path+'\mariadb\bin'
+                $WinSW_Service_MariaDBConfig = $WinSW_Service_MariaDBConfig -replace '##WORKINGDIRECTORY##', ($WCMP.Config.Path+'\mariadb\bin')
                 $WinSW_Service_MariaDBConfig | Set-Content -Path $WinSW_Service_MariaDBFilePath -Encoding utf8
                 $WCMP.Info('MariaDB service working directory set.')
             } catch {
