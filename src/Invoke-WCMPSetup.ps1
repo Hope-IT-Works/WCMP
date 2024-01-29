@@ -433,11 +433,11 @@ if($WCMP.IncludeWinSW){
     $WinSW_DestinationPath         = $WCMP.Config.Path + '\winsw'
     $WinSW_DestinationFilePath     = $WinSW_DestinationPath + '\winsw.exe'
     $WinSW_Service_CaddyResource   = 'https://raw.githubusercontent.com/Hope-IT-Works/WCMP/main/src/winsw/caddy.xml'
-    $WinSW_Service_CaddyFilePath   = $WinSW_DestinationPath + '\caddy.xml'
+    $WinSW_Service_CaddyFilePath   = $Caddy_DestinationPath + '\winsw_caddy.xml'
     $WinSW_Service_PHPResource     = 'https://raw.githubusercontent.com/Hope-IT-Works/WCMP/main/src/winsw/php.xml'
-    $WinSW_Service_PHPFilePath     = $WinSW_DestinationPath + '\php.xml'
+    $WinSW_Service_PHPFilePath     = $PHP_DestinationPath + '\winsw_php.xml'
     $WinSW_Service_MariaDBResource = 'https://raw.githubusercontent.com/Hope-IT-Works/WCMP/main/src/winsw/mariadb.xml'
-    $WinSW_Service_MariaDBFilePath = $WinSW_DestinationPath + '\mariadb.xml'
+    $WinSW_Service_MariaDBFilePath = $MariaDB_DestinationPath + '\bin\winsw_mariadb.xml'
     $WCMP.Info('WinSW requested.')
     $WCMP.Info('Downloading WinSW '+$WinSW_Version+'...')
     if($WCMP.DownloadFile($WinSW_Resource, $WinSW_DestinationFilePath)){
