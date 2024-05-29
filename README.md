@@ -70,11 +70,11 @@ cd caddy
 
 ## Documentation
 
-| Service | Documentation |
-| --- | --- |
-| Caddy | [Link](https://caddyserver.com/docs/command-line) |
-| MariaDB | [Link](https://mariadb.com/kb/en/documentation/) |
-| PHP | [Link](https://www.php.net/manual/en/features.commandline.options.php) |
+| Service | Documentation | Ports |
+| --- | --- | --- |
+| Caddy | [Link](https://caddyserver.com/docs/command-line) | `80`→HTTP<br>`443`→HTTPS<br>`2019`→Config-API |
+| MariaDB | [Link](https://mariadb.com/kb/en/documentation/) | `3306`→SQL |
+| PHP | [Link](https://www.php.net/manual/en/features.commandline.options.php) | `9000`→PHP-CGI (common gateway interface) |
 
 ## FAQ
 
