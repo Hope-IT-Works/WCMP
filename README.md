@@ -51,19 +51,20 @@ You can start the services manually with the following commands:
 
 ### Caddy Server
 
-```bash
-.\caddy\caddy.exe run --watch
+```cmd
+cd caddy
+.\caddy.exe run --watch
 ```
 
 ### MariaDB Server
 
-```bash
+```cmd
 .\mariadb\bin\mysqld.exe
 ```
 
 ### PHP-CGI Server
 
-```bash
+```cmd
 .\php\php-cgi.exe -b 127.0.0.1:9000
 ```
 
