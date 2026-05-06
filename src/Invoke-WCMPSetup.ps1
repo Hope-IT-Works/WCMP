@@ -586,7 +586,7 @@ if($WCMP.IsUpdate){
   <name>WCMP Caddy</name>
   <description>This service runs the WCMP Caddy server.</description>
   <workingdirectory>$($WCMP.Config.Path)\caddy</workingdirectory>
-  <executable>caddy</executable>
+  <executable>$($WCMP.Config.Path)\caddy\caddy.exe</executable>
   <arguments>run --watch</arguments>
   <delayedAutoStart>true</delayedAutoStart>
 </service>
@@ -595,6 +595,10 @@ if($WCMP.IsUpdate){
                 $WCMP.Fatal('Caddy service config could not be written.')
             }
             Copy-Item -Path $WinSW_DestinationFilePath -Destination $WinSW_Service_CaddyExePath -Force
+            if(Get-Service -Name 'WCMP_Caddy' -ErrorAction SilentlyContinue){
+                Stop-Service -Name 'WCMP_Caddy' -Force -ErrorAction SilentlyContinue
+                & $WinSW_Service_CaddyExePath uninstall
+            }
             & $WinSW_Service_CaddyExePath install
             if($LASTEXITCODE -ne 0){ $WCMP.Fatal('Caddy service could not be installed.') }
             $WCMP.Info('Caddy service registered.')
@@ -607,7 +611,7 @@ if($WCMP.IsUpdate){
   <name>WCMP PHP</name>
   <description>This service runs the WCMP PHP server.</description>
   <workingdirectory>$($WCMP.Config.Path)\php</workingdirectory>
-  <executable>php-cgi</executable>
+  <executable>$($WCMP.Config.Path)\php\php-cgi.exe</executable>
   <arguments>-b 127.0.0.1:$($WCMP.Config.PHPPort)</arguments>
   <delayedAutoStart>true</delayedAutoStart>
 </service>
@@ -616,6 +620,10 @@ if($WCMP.IsUpdate){
                     $WCMP.Fatal('PHP service config could not be written.')
                 }
                 Copy-Item -Path $WinSW_DestinationFilePath -Destination $WinSW_Service_PHPExePath -Force
+                if(Get-Service -Name 'WCMP_PHP' -ErrorAction SilentlyContinue){
+                    Stop-Service -Name 'WCMP_PHP' -Force -ErrorAction SilentlyContinue
+                    & $WinSW_Service_PHPExePath uninstall
+                }
                 & $WinSW_Service_PHPExePath install
                 if($LASTEXITCODE -ne 0){ $WCMP.Fatal('PHP service could not be installed.') }
                 $WCMP.Info('PHP service registered.')
@@ -629,7 +637,7 @@ if($WCMP.IsUpdate){
   <name>WCMP MariaDB</name>
   <description>This service runs the WCMP MariaDB server.</description>
   <workingdirectory>$($WCMP.Config.Path)\mariadb\bin</workingdirectory>
-  <executable>mariadbd</executable>
+  <executable>$($WCMP.Config.Path)\mariadb\bin\mariadbd.exe</executable>
   <arguments>--datadir=$($WCMP.Config.Path)\mariadb\data --port=$($WCMP.Config.MariaDBPort)</arguments>
   <delayedAutoStart>true</delayedAutoStart>
 </service>
@@ -638,6 +646,10 @@ if($WCMP.IsUpdate){
                     $WCMP.Fatal('MariaDB service config could not be written.')
                 }
                 Copy-Item -Path $WinSW_DestinationFilePath -Destination $WinSW_Service_MariaDBExePath -Force
+                if(Get-Service -Name 'WCMP_MariaDB' -ErrorAction SilentlyContinue){
+                    Stop-Service -Name 'WCMP_MariaDB' -Force -ErrorAction SilentlyContinue
+                    & $WinSW_Service_MariaDBExePath uninstall
+                }
                 & $WinSW_Service_MariaDBExePath install
                 if($LASTEXITCODE -ne 0){ $WCMP.Fatal('MariaDB service could not be installed.') }
                 $WCMP.Info('MariaDB service registered.')
@@ -952,7 +964,7 @@ if($WCMP.IncludeWinSW){
   <name>WCMP Caddy</name>
   <description>This service runs the WCMP Caddy server.</description>
   <workingdirectory>$($WCMP.Config.Path)\caddy</workingdirectory>
-  <executable>caddy</executable>
+  <executable>$($WCMP.Config.Path)\caddy\caddy.exe</executable>
   <arguments>run --watch</arguments>
   <delayedAutoStart>true</delayedAutoStart>
 </service>
@@ -963,6 +975,10 @@ if($WCMP.IncludeWinSW){
     $WCMP.Info('Caddy service config is available at: "'+$WinSW_Service_CaddyFilePath+'"')
     $WCMP.Info('Installing Caddy service (this may trigger a UAC prompt, please accept)...')
     Copy-Item -Path $WinSW_DestinationFilePath -Destination $WinSW_Service_CaddyExePath -Force
+    if(Get-Service -Name 'WCMP_Caddy' -ErrorAction SilentlyContinue){
+        Stop-Service -Name 'WCMP_Caddy' -Force -ErrorAction SilentlyContinue
+        & $WinSW_Service_CaddyExePath uninstall
+    }
     & $WinSW_Service_CaddyExePath install
     if($LASTEXITCODE -ne 0){
         $WCMP.Fatal('Caddy service could not be installed. (have you accepted the UAC prompt? try running the script as administrator)')
@@ -978,7 +994,7 @@ if($WCMP.IncludeWinSW){
   <name>WCMP PHP</name>
   <description>This service runs the WCMP PHP server.</description>
   <workingdirectory>$($WCMP.Config.Path)\php</workingdirectory>
-  <executable>php-cgi</executable>
+  <executable>$($WCMP.Config.Path)\php\php-cgi.exe</executable>
   <arguments>-b 127.0.0.1:$($WCMP.Config.PHPPort)</arguments>
   <delayedAutoStart>true</delayedAutoStart>
 </service>
@@ -989,6 +1005,10 @@ if($WCMP.IncludeWinSW){
         $WCMP.Info('PHP service config is available at: "'+$WinSW_Service_PHPFilePath+'"')
         $WCMP.Info('Installing PHP service (this may trigger a UAC prompt, please accept)...')
         Copy-Item -Path $WinSW_DestinationFilePath -Destination $WinSW_Service_PHPExePath -Force
+        if(Get-Service -Name 'WCMP_PHP' -ErrorAction SilentlyContinue){
+            Stop-Service -Name 'WCMP_PHP' -Force -ErrorAction SilentlyContinue
+            & $WinSW_Service_PHPExePath uninstall
+        }
         & $WinSW_Service_PHPExePath install
         if($LASTEXITCODE -ne 0){
             $WCMP.Fatal('PHP service could not be installed. (have you accepted the UAC prompt? try running the script as administrator)')
@@ -1005,7 +1025,7 @@ if($WCMP.IncludeWinSW){
   <name>WCMP MariaDB</name>
   <description>This service runs the WCMP MariaDB server.</description>
   <workingdirectory>$($WCMP.Config.Path)\mariadb\bin</workingdirectory>
-  <executable>mariadbd</executable>
+  <executable>$($WCMP.Config.Path)\mariadb\bin\mariadbd.exe</executable>
   <arguments>--datadir=$($WCMP.Config.Path)\mariadb\data --port=$($WCMP.Config.MariaDBPort)</arguments>
   <delayedAutoStart>true</delayedAutoStart>
 </service>
@@ -1016,6 +1036,10 @@ if($WCMP.IncludeWinSW){
         $WCMP.Info('MariaDB service config is available at: "'+$WinSW_Service_MariaDBFilePath+'"')
         $WCMP.Info('Installing MariaDB service (this may trigger a UAC prompt, please accept)...')
         Copy-Item -Path $WinSW_DestinationFilePath -Destination $WinSW_Service_MariaDBExePath -Force
+        if(Get-Service -Name 'WCMP_MariaDB' -ErrorAction SilentlyContinue){
+            Stop-Service -Name 'WCMP_MariaDB' -Force -ErrorAction SilentlyContinue
+            & $WinSW_Service_MariaDBExePath uninstall
+        }
         & $WinSW_Service_MariaDBExePath install
         if($LASTEXITCODE -ne 0){
             $WCMP.Fatal('MariaDB service could not be installed. (have you accepted the UAC prompt? try running the script as administrator)')
@@ -1060,6 +1084,14 @@ try {
     $WCMP.Info('WCMP download cache directory removed.')
 } catch {
     $WCMP.Error('WCMP download cache directory could not be removed.')
+}
+
+if($WCMP.IncludeWinSW){
+    $WCMP.Info('Starting services...')
+    Start-Service -Name 'WCMP_Caddy' -ErrorAction SilentlyContinue
+    if($WCMP.IncludePHP){ Start-Service -Name 'WCMP_PHP' -ErrorAction SilentlyContinue }
+    if($WCMP.IncludeMariaDB){ Start-Service -Name 'WCMP_MariaDB' -ErrorAction SilentlyContinue }
+    $WCMP.Info('Services started.')
 }
 
 $WCMP.Info('---------------------------')
