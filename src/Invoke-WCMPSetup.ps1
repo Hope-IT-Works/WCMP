@@ -127,6 +127,9 @@ class WCMP {
             $Message = 'Reason unknown.'
         }
         Write-Host -ForegroundColor Red ("[FATA]: " + $Message)
+        if(!$this.IsHeadless){
+            Read-Host -Prompt 'Press Enter to exit'
+        }
         exit
     }
 
@@ -335,6 +338,9 @@ if($WCMP.IsReconfigure){
     $WCMP.Info('---------------------------')
     $WCMP.Info('  Reconfiguration finished!')
     $WCMP.Info('---------------------------')
+    if(!$WCMP.IsHeadless){
+        Read-Host -Prompt 'Press Enter to exit'
+    }
     exit
 }
 
@@ -627,6 +633,9 @@ if($WCMP.IsUpdate){
     $WCMP.Info('---------------------------')
     $WCMP.Info('   WCMP update finished!   ')
     $WCMP.Info('---------------------------')
+    if(!$WCMP.IsHeadless){
+        Read-Host -Prompt 'Press Enter to exit'
+    }
     exit
 }
 
@@ -1029,3 +1038,6 @@ try {
 $WCMP.Info('---------------------------')
 $WCMP.Info('WCMP installation finished!')
 $WCMP.Info('---------------------------')
+if(!$WCMP.IsHeadless){
+    Read-Host -Prompt 'Press Enter to exit'
+}
