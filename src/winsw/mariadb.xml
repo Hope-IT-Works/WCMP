@@ -1,9 +1,0 @@
-<service>
-  <id>WCMP_MariaDB</id>
-  <name>WCMP MariaDB</name>
-  <description>This service runs the WCMP MariaDB server.</description>
-  <workingdirectory>##WORKINGDIRECTORY##</workingdirectory>
-  <executable>mariadbd</executable>
-  <arguments>--datadir=##WORKINGDIRECTORY##\..\data --port=##MARIADBPORT##</arguments>
-  <delayedAutoStart>true</delayedAutoStart>
-</service>
