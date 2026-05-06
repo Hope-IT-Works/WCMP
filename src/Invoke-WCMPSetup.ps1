@@ -208,16 +208,17 @@ if(!([System.Environment]::Is64BitOperatingSystem) -or !(([System.Environment]::
 }
 
 # Set root path for setup with fallback to the default path
-if($WCMP.Config.Path -and !(Test-Path -PathType Container -Path $WCMP.Config.Path)){
-    try {
-        $WCMP.Info('Creating installation directory "'+$WCMP.Config.Path+'"...')
-        New-Item -Path $WCMP.Config.Path -ItemType Directory | Out-Null
-        $WCMP.Info('Installation directory created.')
-    } catch {
-        $WCMP.Warn('Could not create the specified path "'+$WCMP.Config.Path+'". Falling back to current directory.')
-        $WCMP.Config.Path = $WCMP.DefaultConfig.Path
+if($WCMP.Config.Path){
+    if(!(Test-Path -PathType Container -Path $WCMP.Config.Path)){
+        try {
+            $WCMP.Info('Creating installation directory "'+$WCMP.Config.Path+'"...')
+            New-Item -Path $WCMP.Config.Path -ItemType Directory -Force | Out-Null
+            $WCMP.Info('Installation directory created.')
+        } catch {
+            $WCMP.Fatal('Could not create the specified path "'+$WCMP.Config.Path+'". Make sure the path is valid and you have sufficient permissions.')
+        }
     }
-} elseif(!($WCMP.Config.Path)) {
+} else {
     $WCMP.Config.Path = $WCMP.DefaultConfig.Path
 }
 
