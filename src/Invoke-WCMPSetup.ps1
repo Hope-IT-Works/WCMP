@@ -595,10 +595,8 @@ if($WCMP.IsUpdate){
                 $WCMP.Fatal('Caddy service config could not be written.')
             }
             Copy-Item -Path $WinSW_DestinationFilePath -Destination $WinSW_Service_CaddyExePath -Force
-            if(Get-Service -Name 'WCMP_Caddy' -ErrorAction SilentlyContinue){
-                Stop-Service -Name 'WCMP_Caddy' -Force -ErrorAction SilentlyContinue
-                & $WinSW_Service_CaddyExePath uninstall
-            }
+            Stop-Service -Name 'WCMP_Caddy' -Force -ErrorAction SilentlyContinue
+            sc.exe delete WCMP_Caddy 2>$null | Out-Null
             & $WinSW_Service_CaddyExePath install
             if($LASTEXITCODE -ne 0){ $WCMP.Fatal('Caddy service could not be installed.') }
             $WCMP.Info('Caddy service registered.')
@@ -620,10 +618,8 @@ if($WCMP.IsUpdate){
                     $WCMP.Fatal('PHP service config could not be written.')
                 }
                 Copy-Item -Path $WinSW_DestinationFilePath -Destination $WinSW_Service_PHPExePath -Force
-                if(Get-Service -Name 'WCMP_PHP' -ErrorAction SilentlyContinue){
-                    Stop-Service -Name 'WCMP_PHP' -Force -ErrorAction SilentlyContinue
-                    & $WinSW_Service_PHPExePath uninstall
-                }
+                Stop-Service -Name 'WCMP_PHP' -Force -ErrorAction SilentlyContinue
+                sc.exe delete WCMP_PHP 2>$null | Out-Null
                 & $WinSW_Service_PHPExePath install
                 if($LASTEXITCODE -ne 0){ $WCMP.Fatal('PHP service could not be installed.') }
                 $WCMP.Info('PHP service registered.')
@@ -646,10 +642,8 @@ if($WCMP.IsUpdate){
                     $WCMP.Fatal('MariaDB service config could not be written.')
                 }
                 Copy-Item -Path $WinSW_DestinationFilePath -Destination $WinSW_Service_MariaDBExePath -Force
-                if(Get-Service -Name 'WCMP_MariaDB' -ErrorAction SilentlyContinue){
-                    Stop-Service -Name 'WCMP_MariaDB' -Force -ErrorAction SilentlyContinue
-                    & $WinSW_Service_MariaDBExePath uninstall
-                }
+                Stop-Service -Name 'WCMP_MariaDB' -Force -ErrorAction SilentlyContinue
+                sc.exe delete WCMP_MariaDB 2>$null | Out-Null
                 & $WinSW_Service_MariaDBExePath install
                 if($LASTEXITCODE -ne 0){ $WCMP.Fatal('MariaDB service could not be installed.') }
                 $WCMP.Info('MariaDB service registered.')
@@ -975,10 +969,8 @@ if($WCMP.IncludeWinSW){
     $WCMP.Info('Caddy service config is available at: "'+$WinSW_Service_CaddyFilePath+'"')
     $WCMP.Info('Installing Caddy service (this may trigger a UAC prompt, please accept)...')
     Copy-Item -Path $WinSW_DestinationFilePath -Destination $WinSW_Service_CaddyExePath -Force
-    if(Get-Service -Name 'WCMP_Caddy' -ErrorAction SilentlyContinue){
-        Stop-Service -Name 'WCMP_Caddy' -Force -ErrorAction SilentlyContinue
-        & $WinSW_Service_CaddyExePath uninstall
-    }
+    Stop-Service -Name 'WCMP_Caddy' -Force -ErrorAction SilentlyContinue
+    sc.exe delete WCMP_Caddy 2>$null | Out-Null
     & $WinSW_Service_CaddyExePath install
     if($LASTEXITCODE -ne 0){
         $WCMP.Fatal('Caddy service could not be installed. (have you accepted the UAC prompt? try running the script as administrator)')
@@ -1005,10 +997,8 @@ if($WCMP.IncludeWinSW){
         $WCMP.Info('PHP service config is available at: "'+$WinSW_Service_PHPFilePath+'"')
         $WCMP.Info('Installing PHP service (this may trigger a UAC prompt, please accept)...')
         Copy-Item -Path $WinSW_DestinationFilePath -Destination $WinSW_Service_PHPExePath -Force
-        if(Get-Service -Name 'WCMP_PHP' -ErrorAction SilentlyContinue){
-            Stop-Service -Name 'WCMP_PHP' -Force -ErrorAction SilentlyContinue
-            & $WinSW_Service_PHPExePath uninstall
-        }
+        Stop-Service -Name 'WCMP_PHP' -Force -ErrorAction SilentlyContinue
+        sc.exe delete WCMP_PHP 2>$null | Out-Null
         & $WinSW_Service_PHPExePath install
         if($LASTEXITCODE -ne 0){
             $WCMP.Fatal('PHP service could not be installed. (have you accepted the UAC prompt? try running the script as administrator)')
@@ -1036,10 +1026,8 @@ if($WCMP.IncludeWinSW){
         $WCMP.Info('MariaDB service config is available at: "'+$WinSW_Service_MariaDBFilePath+'"')
         $WCMP.Info('Installing MariaDB service (this may trigger a UAC prompt, please accept)...')
         Copy-Item -Path $WinSW_DestinationFilePath -Destination $WinSW_Service_MariaDBExePath -Force
-        if(Get-Service -Name 'WCMP_MariaDB' -ErrorAction SilentlyContinue){
-            Stop-Service -Name 'WCMP_MariaDB' -Force -ErrorAction SilentlyContinue
-            & $WinSW_Service_MariaDBExePath uninstall
-        }
+        Stop-Service -Name 'WCMP_MariaDB' -Force -ErrorAction SilentlyContinue
+        sc.exe delete WCMP_MariaDB 2>$null | Out-Null
         & $WinSW_Service_MariaDBExePath install
         if($LASTEXITCODE -ne 0){
             $WCMP.Fatal('MariaDB service could not be installed. (have you accepted the UAC prompt? try running the script as administrator)')
