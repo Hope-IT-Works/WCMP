@@ -431,21 +431,21 @@ if($WCMP.IsUpdate){
         $WCMP.Info('---------------------------')
         $WCMP.Info('        UPDATING PHP       ')
         $WCMP.Info('---------------------------')
+        $PHP_Resources_URL = 'https://downloads.php.net/~windows/releases/releases.json'
         try {
-            $PHP_Resources_URL = 'https://windows.php.net/downloads/releases/'
-            $PHP_Resources = (Invoke-WebRequest -UseBasicParsing -Uri $PHP_Resources_URL).Links.href | Where-Object -FilterScript {$_ -match ("/downloads/releases/php-")}
+            $PHP_Resources = (Invoke-WebRequest -UseBasicParsing -Uri $PHP_Resources_URL).Content | ConvertFrom-Json
         } catch {
             $WCMP.Error('(PHPRequest) failed: Request failed, URL "'+$PHP_Resources_URL+'"')
         }
         $PHP_Versions = New-Object -TypeName System.Collections.ArrayList
-        foreach($Resource in $PHP_Resources){
-            if($Resource -notmatch 'x64' -or $Resource -match 'src' -or $Resource -match 'test' -or $Resource -match 'debug' -or $Resource -match 'nts' -or $Resource -match 'devel'){
-                continue
-            } else {
+        foreach($Major in ($PHP_Resources.PSObject.Properties | Select-Object -ExpandProperty Name)){
+            $Entry = $PHP_Resources.$Major
+            $TSKey = $Entry.PSObject.Properties.Name | Where-Object { $_ -match '^ts-' -and $_ -match 'x64$' } | Select-Object -First 1
+            if($TSKey -and $Entry.$TSKey.zip.path){
                 $PHP_Version = New-Object -TypeName PSCustomObject
                 $PHP_Version | Add-Member -MemberType NoteProperty -Name 'ID' -Value $PHP_Versions.Count
-                $PHP_Version | Add-Member -MemberType NoteProperty -Name 'Name' -Value ($Resource.Split("/")[3].Split("-")[1]+"-"+$Resource.Split("/")[3].Split("-")[4].Split(".")[0])
-                $PHP_Version | Add-Member -MemberType NoteProperty -Name 'URL' -Value ("https://windows.php.net"+$Resource)
+                $PHP_Version | Add-Member -MemberType NoteProperty -Name 'Name' -Value ($Entry.version + '-' + $TSKey.Split('-')[1])
+                $PHP_Version | Add-Member -MemberType NoteProperty -Name 'URL' -Value ('https://downloads.php.net/~windows/releases/' + $Entry.$TSKey.zip.path)
                 $PHP_Versions.Add($PHP_Version) | Out-Null
             }
         }
@@ -745,21 +745,21 @@ if($WCMP.IncludePHP){
     $WCMP.Info('---------------------------')
     $WCMP.Info('            PHP            ')
     $WCMP.Info('---------------------------')
+    $PHP_Resources_URL = 'https://downloads.php.net/~windows/releases/releases.json'
     try {
-        $PHP_Resources_URL = 'https://windows.php.net/downloads/releases/'
-        $PHP_Resources = (Invoke-WebRequest -UseBasicParsing -Uri $PHP_Resources_URL).Links.href | Where-Object -FilterScript {$_ -match ("/downloads/releases/php-")}
+        $PHP_Resources = (Invoke-WebRequest -UseBasicParsing -Uri $PHP_Resources_URL).Content | ConvertFrom-Json
     } catch {
         $WCMP.Error('(PHPRequest) failed: Request failed, URL "'+$PHP_Resources_URL+'"')
     }
     $PHP_Versions = New-Object -TypeName System.Collections.ArrayList
-    foreach($Resource in $PHP_Resources){
-        if($Resource -notmatch 'x64' -or $Resource -match 'src' -or $Resource -match 'test' -or $Resource -match 'debug' -or $Resource -match 'nts' -or $Resource -match 'devel'){
-            continue
-        } else {
+    foreach($Major in ($PHP_Resources.PSObject.Properties | Select-Object -ExpandProperty Name)){
+        $Entry = $PHP_Resources.$Major
+        $TSKey = $Entry.PSObject.Properties.Name | Where-Object { $_ -match '^ts-' -and $_ -match 'x64$' } | Select-Object -First 1
+        if($TSKey -and $Entry.$TSKey.zip.path){
             $PHP_Version = New-Object -TypeName PSCustomObject
             $PHP_Version | Add-Member -MemberType NoteProperty -Name 'ID' -Value $PHP_Versions.Count
-            $PHP_Version | Add-Member -MemberType NoteProperty -Name 'Name' -Value ($Resource.Split("/")[3].Split("-")[1]+"-"+$Resource.Split("/")[3].Split("-")[4].Split(".")[0])
-            $PHP_Version | Add-Member -MemberType NoteProperty -Name 'URL' -Value ("https://windows.php.net"+$Resource)
+            $PHP_Version | Add-Member -MemberType NoteProperty -Name 'Name' -Value ($Entry.version + '-' + $TSKey.Split('-')[1])
+            $PHP_Version | Add-Member -MemberType NoteProperty -Name 'URL' -Value ('https://downloads.php.net/~windows/releases/' + $Entry.$TSKey.zip.path)
             $PHP_Versions.Add($PHP_Version) | Out-Null
         }
     }

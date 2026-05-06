@@ -34,7 +34,9 @@ WCMP comes with default configuration files for all components. You can change t
 > Administrator rights are only required if you include Windows Services (default).
 
 ```powershell
-& $([ScriptBlock]::Create((Invoke-WebRequest -UseBasicParsing -Uri "https://raw.githubusercontent.com/Hope-IT-Works/WCMP/main/src/Invoke-WCMPSetup.ps1").Content)) -Path "C:\ProgramData\WCMP"
+$tmp = "$env:TEMP\Invoke-WCMPSetup.ps1"
+Invoke-WebRequest -UseBasicParsing -Uri "https://raw.githubusercontent.com/Hope-IT-Works/WCMP/main/src/Invoke-WCMPSetup.ps1" -OutFile $tmp
+powershell -ExecutionPolicy Bypass -File $tmp -Path "C:\ProgramData\WCMP"
 ```
 
 The script always fetches the latest versions of all components and lets you choose from available PHP versions.
