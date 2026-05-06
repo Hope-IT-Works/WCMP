@@ -1,5 +1,5 @@
 <service>
-  <id>WCMP Caddy</id>
+  <id>WCMP_Caddy</id>
   <name>WCMP Caddy</name>
   <description>This service runs the WCMP Caddy server.</description>
   <workingdirectory>##WORKINGDIRECTORY##</workingdirectory>

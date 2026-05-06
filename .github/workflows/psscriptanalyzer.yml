@@ -1,0 +1,33 @@
+name: PSScriptAnalyzer
+
+on:
+  push:
+    paths:
+      - 'src/**.ps1'
+  pull_request:
+    paths:
+      - 'src/**.ps1'
+
+jobs:
+  analyze:
+    name: Analyze PowerShell scripts
+    runs-on: windows-latest
+    permissions:
+      security-events: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Run PSScriptAnalyzer
+        uses: microsoft/psscriptanalyzer-action@v1.1
+        with:
+          path: .\src
+          recurse: true
+          severity: '"Error", "Warning"'
+          output: results.sarif
+
+      - name: Upload SARIF results
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: results.sarif
